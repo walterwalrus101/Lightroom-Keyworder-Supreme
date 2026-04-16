@@ -753,14 +753,37 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                         local keywords, caption, parseErr = parseKeywords(responseJson)
                         keywords = keywords or {}
 
-                        -- Sparse retry: if fewer than 5 AI keywords, try once more
+                        -- Sparse retry: if fewer than 5 AI keywords, retry once
+                        -- with a focused category-specific prompt instead of the
+                        -- same prompt — more likely to get a full keyword set.
                         local aiCount = 0
                         for _, kw in ipairs(keywords) do
                             if kw.score < 1.0 then aiCount = aiCount + 1 end
                         end
                         if aiCount < 5 and not parseErr then
+                            -- Determine the best focused prompt for the retry.
+                            -- If the first pass was auto-detect and returned a
+                            -- recognised category, use that category's prompt.
+                            -- Otherwise fall back to the portrait prompt (most
+                            -- detailed — works reasonably for any subject).
+                            local detectedCategory = nil
+                            for _, kw in ipairs(keywords) do
+                                if kw.score >= 1.0 and PROMPTS[kw.name] then
+                                    detectedCategory = kw.name; break
+                                end
+                            end
+                            local retryPrompt
+                            if activePrompt == PROMPTS['auto'] and detectedCategory then
+                                retryPrompt = PROMPTS[detectedCategory]
+                            elseif activePrompt == PROMPTS['auto'] then
+                                retryPrompt = PROMPTS['portrait']
+                            else
+                                -- Already on a focused prompt — retry with a
+                                -- different focused prompt (auto) for variety
+                                retryPrompt = PROMPTS['auto']
+                            end
                             waitForRateLimit()
-                            local r2, e2 = callGeminiAPI(apiKey, imgData, activePrompt)
+                            local r2, e2 = callGeminiAPI(apiKey, imgData, retryPrompt)
                             if r2 and not e2 then
                                 estimatedSpend = estimatedSpend + COST_PER_IMAGE
                                 local kw2, cap2 = parseKeywords(r2)
