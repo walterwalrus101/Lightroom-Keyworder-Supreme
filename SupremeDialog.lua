@@ -94,16 +94,43 @@ Output EXACTLY 7 lines — nothing else before or after:
 CATEGORY: [portrait | landscape | candid]
 LOCATION: [indoor or outdoor]
 LIGHTING: [natural light | studio light | mixed lighting]
-COLOR: [single most dominant colour across the ENTIRE image — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
+COLOR: [single most dominant colour across the ENTIRE image — background, clothing, and all elements combined — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
 TONE: [overall palette — one phrase from: warm tones | cool tones | muted tones | vibrant colours | black and white | pastel tones | earthy tones | neutral tones | golden hour | high contrast]
 CAPTION: [one vivid sentence describing subject, setting, lighting and mood]
-KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given above. No colour words. Use the category list below:]
+KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given in CATEGORY, LOCATION, LIGHTING, COLOR or TONE above. No colour words. Use the list for the CATEGORY you chose:]
 
-  portrait — who (man, woman, child, teenager, young adult, middle-aged, senior), group size (solo, duo, trio, four-piece, full band, large group), look (long hair, shaved head, afro, braids, beard, stubble, glasses, sunglasses, tattoos), styling (suit, leather jacket, streetwear, formal, denim, all black, colourful outfit, hat, heavy makeup, costume), instrument if visible (guitar, bass, drums, piano, keyboard, saxophone, trumpet, microphone), framing REQUIRED pick exactly one (extreme close-up face, close-up face, headshot, bust shot, half body, three-quarter body, full body, wide shot), shoot context (press shot, album artwork, editorial, live performance, backstage, festival, EPK, music video, headshot session, behind the scenes), setting (studio, white cyc, rooftop, warehouse, industrial, concert stage, alley, urban street, stairwell, home, forest, beach, graffiti wall), lighting quality (rim light, window light, neon light, single source, high-key, low-key, dramatic, soft light, backlit, silhouette, golden hour), mood (brooding, intense, vulnerable, laughing, relaxed, pensive, confrontational, connected, candid moment, confident), eye contact (if eyes clearly aimed at lens include "looking at camera")
+  portrait — who (man, woman, child, teenager, young adult, middle-aged, senior), group size (solo, duo, trio, four-piece, full band, large group), look (long hair, shaved head, afro, braids, beard, stubble, glasses, sunglasses, tattoos), styling (suit, leather jacket, streetwear, formal, denim, all black, colourful outfit, hat, heavy makeup, costume), instrument if visible (guitar, bass, drums, piano, keyboard, saxophone, trumpet, microphone), framing REQUIRED pick exactly one (extreme close-up face, close-up face, headshot, bust shot, half body, three-quarter body, full body, wide shot) where: extreme close-up face=only part of face; close-up face=full face fills frame; headshot=face+shoulders to collarbone; bust shot=head to mid-chest; half body=head to waist; three-quarter body=head to mid-thigh; full body=entire person head to toe; wide shot=person small in frame, shoot context (press shot, album artwork, editorial, live performance, backstage, festival, EPK, music video, headshot session, behind the scenes), setting (studio, white cyc, rooftop, warehouse, industrial, concert stage, alley, urban street, stairwell, home, forest, beach, graffiti wall), lighting quality (rim light, window light, neon light, single source, high-key, low-key, dramatic, soft light, backlit, silhouette, golden hour), mood (brooding, intense, vulnerable, laughing, relaxed, pensive, confrontational, connected, candid moment, confident), eye contact (if eyes clearly aimed at lens include "looking at camera")
 
-  landscape — scene (mountain, valley, canyon, cliff, forest, woodland, meadow, coast, beach, ocean, sea, lake, river, waterfall, desert, glacier, arctic, island), sky & weather (clear sky, dramatic clouds, overcast, storm, fog, mist, rain, snow, golden hour, blue hour, sunset, sunrise, rainbow, aurora, milky way, night sky), time of day (dawn, morning, midday, afternoon, dusk, night), season (spring, summer, autumn, winter), vegetation (trees, wildflowers, grass, reeds, tropical, deciduous, coniferous, bare trees), water (calm water, rough sea, crashing waves, reflection, waterfall, rapids, still lake, long exposure), composition (leading lines, foreground interest, panoramic, layered landscape, silhouette, wide angle, aerial, rule of thirds), mood (peaceful, dramatic, moody, serene, desolate, wild, majestic, vast, ethereal)
+  landscape — cover: scene (mountain, valley, canyon, cliff, forest, woodland, meadow, coast, beach, ocean, sea, lake, river, waterfall, desert, glacier, arctic, island), sky & weather (clear sky, dramatic clouds, overcast, storm, fog, mist, rain, snow, golden hour, blue hour, sunset, sunrise, rainbow, aurora, milky way, night sky), time of day (dawn, morning, midday, afternoon, dusk, night), season (spring, summer, autumn, winter), vegetation (trees, wildflowers, grass, reeds, tropical, deciduous, coniferous, bare trees), water (calm water, rough sea, crashing waves, reflection, waterfall, rapids, still lake, long exposure), composition (leading lines, foreground interest, panoramic, layered landscape, silhouette, wide angle, aerial, rule of thirds), mood (peaceful, dramatic, moody, serene, desolate, wild, majestic, vast, ethereal)
 
-  candid — who (man, woman, child, teenager, elderly, couple, family, group, crowd), action (walking, running, talking, laughing, eating, working, playing, dancing, sitting, shopping, performing, embracing), emotion (joy, laughter, sadness, surprise, concentration, tenderness, anger, excitement, contemplation, intimacy), setting (street, market, cafe, park, festival, concert, sporting event, workplace, restaurant, airport, playground), style (reportage, documentary, street photography, photojournalism, travel photography, humanist photography), composition (decisive moment, motion blur, freeze action, wide establishing shot, tight close-up, environmental context, layered depth), mood (lively, quiet, intimate, chaotic, nostalgic, gritty, joyful, tense, peaceful, melancholic)
+  candid — cover: who (man, woman, child, teenager, elderly, couple, family, group, crowd), action (walking, running, talking, laughing, eating, working, playing, dancing, sitting, shopping, performing, embracing), emotion (joy, laughter, sadness, surprise, concentration, tenderness, anger, excitement, contemplation, intimacy), setting (street, market, cafe, park, festival, concert, sporting event, workplace, restaurant, airport, playground), style (reportage, documentary, street photography, photojournalism, travel photography, humanist photography), composition (decisive moment, motion blur, freeze action, wide establishing shot, tight close-up, environmental context, layered depth), mood (lively, quiet, intimate, chaotic, nostalgic, gritty, joyful, tense, peaceful, melancholic)
+
+Example output for a musician portrait:
+CATEGORY: portrait
+LOCATION: indoor
+LIGHTING: studio light
+COLOR: black
+TONE: high contrast
+CAPTION: A bearded middle-aged musician rim-lit in a dark studio, headshot with a brooding expression.
+KEYWORDS: portrait, man, solo, beard, long hair, leather jacket, headshot, middle-aged, low-key, rim light, bokeh background, shallow depth of field, brooding, press shot, studio, serious
+
+Example output for a mountain sunset:
+CATEGORY: landscape
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: gold
+TONE: golden hour
+CAPTION: Snow-capped mountain peaks silhouetted against a golden-hour sky with layered forest below.
+KEYWORDS: mountain, alpine, peaks, dramatic clouds, sunset, golden hour, wide angle, layered landscape, silhouette, vast, majestic, coniferous trees, valley, panoramic, rule of thirds, serene, highland
+
+Example output for a street market:
+CATEGORY: candid
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: orange
+TONE: warm tones
+CAPTION: A bustling outdoor street market with vendors and shoppers in warm afternoon light.
+KEYWORDS: street market, crowd, vendors, shopping, bustling, lively, documentary, wide shot, environmental context, market stalls, urban, candid, spontaneous, travel photography, chaotic, street photography
 ]]
 
 PROMPTS['portrait'] = [[
@@ -111,10 +138,10 @@ You are a photo library assistant specialising in portrait and music photography
 
 LOCATION: [indoor or outdoor]
 LIGHTING: [natural light | studio light | mixed lighting]
-COLOR: [the single most dominant colour across the entire image — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
+COLOR: [the single most dominant colour across the entire image — background, clothing, and all elements combined — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
 TONE: [overall palette — one phrase from: warm tones | cool tones | muted tones | vibrant colours | black and white | pastel tones | earthy tones | neutral tones | golden hour | high contrast]
 CAPTION: [one vivid sentence describing subject, setting, lighting and mood]
-KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given above. No colour words. Cover:]
+KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given in LOCATION, LIGHTING, COLOR or TONE above. No colour words. Cover as many of these as apply:]
 - Who: man, woman, solo, duo, trio, group, band, crowd, child, teenager, young adult, middle-aged, senior
 - Look: long hair, shaved head, afro, braids, dreadlocks, curly hair, beard, stubble, clean-shaven, moustache, glasses, sunglasses, hat, cap, bandana, earrings, tattoos, suit, casual, streetwear, leather jacket, denim jacket, formal
 - Instrument: guitar, bass, drums, piano, keyboard, violin, saxophone, trumpet, microphone, turntables (only if visible)
@@ -124,7 +151,33 @@ KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already gi
 - Lighting quality: high-key, low-key, dramatic, soft light, harsh light, rim light, backlit, silhouette
 - Setting: studio, rooftop, alley, concert venue, backstage, home, street, warehouse, park, graffiti wall, urban, forest, beach
 - Mood: serious, intense, relaxed, joyful, candid, laughing, brooding, confident, vulnerable, pensive, dramatic
-- Eye contact: if the subject's eyes are clearly and directly aimed at the camera lens add "looking at camera"
+- Eye contact: if the subject's eyes are clearly and directly aimed at the camera lens, add "looking at camera" as one of the keywords
+
+Framing guide:
+  extreme close-up face = only part of the face fills the frame (eyes, lips, etc.)
+  close-up face         = full face fills most of the frame, little or no neck/shoulders visible
+  headshot              = face and neck/shoulders, roughly from collar-bone up
+  bust shot             = head down to mid-chest
+  half body             = head down to waist
+  three-quarter body    = head down to mid-thigh or knee
+  full body             = entire person visible head to toe
+  wide shot             = person occupies a small part of the frame; setting dominates
+
+Example output for a musician portrait:
+LOCATION: indoor
+LIGHTING: studio light
+COLOR: black
+TONE: high contrast
+CAPTION: A bearded middle-aged musician rim-lit in a dark studio, headshot portrait with a brooding serious expression.
+KEYWORDS: portrait, man, solo, beard, long hair, leather jacket, headshot, middle-aged, low-key, rim light, bokeh background, shallow depth of field, brooding, press shot, studio, serious
+
+Example output for a band shot:
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: grey
+TONE: muted tones
+CAPTION: Four men in casual streetwear standing full body in a grey urban alley, soft natural light, editorial feel.
+KEYWORDS: group, band, four people, men, street, urban, alley, graffiti wall, casual, full body, wide shot, candid, confident, eye level, soft light, editorial
 ]]
 
 PROMPTS['landscape'] = [[
@@ -135,7 +188,32 @@ LIGHTING: [natural light | studio light | mixed lighting]
 COLOR: [the single most dominant colour — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
 TONE: [overall palette — one phrase from: warm tones | cool tones | muted tones | vibrant colours | black and white | pastel tones | earthy tones | neutral tones | golden hour | high contrast]
 CAPTION: [one vivid sentence describing subject, setting, lighting and mood]
-KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given above. No colour words. Cover: scene type, sky & weather, time of day, season, vegetation, water features, composition techniques, mood, geography]
+KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given in LOCATION, LIGHTING, COLOR or TONE above. No colour words. Cover as many of these as apply:]
+- Scene: mountain, valley, canyon, cliff, rock formation, volcano, glacier, arctic, tundra, forest, woodland, meadow, field, farmland, countryside, coast, beach, ocean, sea, lake, river, stream, waterfall, wetland, swamp, desert, sand dunes, cave, island, peninsula
+- Sky & weather: clear sky, dramatic clouds, overcast, storm, fog, mist, rain, snow, hail, wind, golden hour, blue hour, sunset, sunrise, rainbow, lightning, aurora borealis, star trails, milky way, night sky, partial clouds
+- Time of day: dawn, morning, midday, afternoon, dusk, night
+- Season: spring, summer, autumn, winter
+- Vegetation: dense forest, sparse trees, wildflowers, tall grass, reeds, moss, lichen, cactus, palm trees, tropical vegetation, deciduous trees, coniferous trees, bare branches, autumn leaves
+- Water: calm water, rough sea, crashing waves, ocean spray, mirror reflection, rushing waterfall, rapids, still lake, winding river, ice, frozen lake, snow field
+- Composition: leading lines, foreground interest, reflection, panoramic view, layered landscape, silhouette, long exposure, wide angle, aerial view, symmetrical, rule of thirds, negative space
+- Mood: peaceful, dramatic, moody, serene, desolate, wild, majestic, intimate, vast, threatening, sublime, ethereal
+- Geography (if clear): alpine, mediterranean, tropical, nordic, arid, temperate, coastal, highland, lowland, canyon lands, steppe
+
+Example output for a mountain sunset:
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: gold
+TONE: golden hour
+CAPTION: Snow-capped mountain peaks silhouetted against a golden-hour sky, layered coniferous forest stretching into the valley below.
+KEYWORDS: mountain, alpine, peaks, snow-capped, dramatic clouds, sunset, golden hour, wide angle, layered landscape, silhouette, vast, majestic, coniferous trees, valley, panoramic view, rule of thirds, serene, highland
+
+Example output for a coastal scene:
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: teal
+TONE: cool tones
+CAPTION: Rocky coastline battered by crashing waves under a dramatic overcast sky, long-exposure mist softening the foreground rocks.
+KEYWORDS: coast, rocky coastline, ocean, waves, crashing waves, cliff, dramatic clouds, long exposure, leading lines, moody, wild, wide angle, foreground interest, misty, overcast, temperate, seascape
 ]]
 
 PROMPTS['candid'] = [[
@@ -146,7 +224,32 @@ LIGHTING: [natural light | studio light | mixed lighting]
 COLOR: [the single most dominant colour — one word from: red orange yellow green blue purple pink brown white black grey gold teal]
 TONE: [overall palette — one phrase from: warm tones | cool tones | muted tones | vibrant colours | black and white | pastel tones | earthy tones | neutral tones | golden hour | high contrast]
 CAPTION: [one vivid sentence describing subject, setting, lighting and mood]
-KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given above. No colour words. Cover: who, action, emotion, setting, photography style, composition, mood]
+KEYWORDS: [15 to 20 comma-separated keywords — do NOT repeat values already given in LOCATION, LIGHTING, COLOR or TONE above. No colour words. Cover as many of these as apply:]
+- Who: man, woman, child, teenager, elderly person, couple, family, group, crowd, solo subject
+- What they are doing: walking, running, talking, laughing, eating, drinking, working, playing, dancing, sitting, standing, watching, reading, shopping, cycling, protesting, performing, embracing, arguing, resting
+- Emotion & expression: joy, laughter, sadness, surprise, concentration, tenderness, anger, excitement, contemplation, intimacy, boredom, wonder, grief, pride
+- Setting: street, market, cafe, park, public transport, festival, concert, sporting event, protest, workplace, home, school, beach, restaurant, bar, airport, place of worship, tourist site, playground
+- Style: reportage, documentary, street photography, photojournalism, travel photography, social documentary, humanist photography
+- Action quality: decisive moment, peak action, fleeting expression, chance encounter, spontaneous interaction, unposed, candid, behind the scenes
+- Composition: environmental context, motion blur, freeze action, wide establishing shot, tight close-up, over the shoulder, layered depth, framed subject
+- Urban detail: architecture, graffiti, signage, vehicles, crowds, storefronts, alley, public space, market stalls, street art
+- Mood: lively, quiet, intimate, chaotic, nostalgic, gritty, joyful, tense, peaceful, melancholic, hopeful
+
+Example output for a street market scene:
+LOCATION: outdoor
+LIGHTING: natural light
+COLOR: orange
+TONE: warm tones
+CAPTION: A bustling outdoor street market with vendors and shoppers moving through stalls bathed in warm afternoon light.
+KEYWORDS: street market, crowd, vendors, shopping, people, bustling, lively, documentary, photojournalism, wide shot, environmental context, market stalls, urban, layered depth, candid, spontaneous interaction, travel photography, chaotic, street photography
+
+Example output for an intimate portrait moment:
+LOCATION: indoor
+LIGHTING: natural light
+COLOR: grey
+TONE: muted tones
+CAPTION: An elderly couple sitting quietly together at home, bathed in soft window light, their closeness tender and contemplative.
+KEYWORDS: couple, elderly, sitting, tenderness, intimacy, candid, quiet, contemplation, home, window light, tight close-up, humanist photography, unposed, decisive moment, peaceful, social documentary, storytelling
 ]]
 
 -- ── Gemini API call ──────────────────────────────────────────────────────────
