@@ -1,0 +1,6 @@
+# Lightroom temp files
+*.tmp.*
+*.tmp
+# OS
+.DS_Store
+Thumbs.db
