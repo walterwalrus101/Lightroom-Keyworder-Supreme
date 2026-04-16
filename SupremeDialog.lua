@@ -535,10 +535,11 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                 or  string.format('~%d minutes', estMins)
 
         local f           = LrView.osFactory()
-        local dialogOk, pickedStyle = LrFunctionContext.callWithContext('supreme_dlg',
+        local dialogOk, pickedStyle, writeXmp = LrFunctionContext.callWithContext('supreme_dlg',
             function(dlgCtx)
                 local props  = LrBinding.makePropertyTable(dlgCtx)
-                props.style  = prefs.lastStyle or 'auto'
+                props.style    = prefs.lastStyle or 'auto'
+                props.writeXmp = prefs.writeXmp ~= false   -- default true
 
                 local dr = LrDialogs.presentModalDialog {
                     title    = 'Keyworder Supreme',
@@ -567,6 +568,19 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                         f:row { f:radio_button { title='Candid & Documentary',
                             value=LrView.bind('style'), checked_value='candid'    } },
                         f:separator { fill_horizontal = 1 },
+                        f:row {
+                            f:checkbox {
+                                value = LrView.bind('writeXmp'),
+                                title = 'Also write keywords to XMP sidecars / file metadata',
+                                font  = '<system>',
+                            },
+                        },
+                        f:static_text {
+                            title = 'Overwrites existing XMP keywords on disk. Recommended when a\n'
+                                 .. 'previous tool already wrote keywords to XMP.',
+                            font  = '<system/small>',
+                        },
+                        f:separator { fill_horizontal = 1 },
                         f:static_text {
                             title = string.format(
                                 'Photos: %d%s\nEst. cost: $%.4f     Est. time: %s',
@@ -581,11 +595,12 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                     },
                     actionVerb = 'Erase & Re-Keyword',
                 }
-                return dr == 'ok', props.style
+                return dr == 'ok', props.style, props.writeXmp
             end)
 
         if not dialogOk then return end
         prefs.lastStyle = pickedStyle
+        prefs.writeXmp  = writeXmp
 
         local activePrompt = PROMPTS[pickedStyle] or PROMPTS['auto']
 
@@ -875,6 +890,32 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
 
         applyProgress:done()
 
+        -- ── XMP write phase ───────────────────────────────────────────────────
+        local xmpWritten = 0
+        local xmpErr     = nil
+        if writeXmp and written > 0 then
+            local xmpProgress = LrProgressScope {
+                title = string.format('Writing XMP metadata for %d photo%s…',
+                    written, written == 1 and '' or 's'),
+            }
+            xmpProgress:setCaption('Saving to disk…')
+            local xmpIdx = 0
+            for _, result in ipairs(scanResults) do
+                if not result.err and #result.keywords > 0 then
+                    xmpIdx = xmpIdx + 1
+                    xmpProgress:setPortionComplete(xmpIdx - 1, written)
+                    local ok, err = pcall(function() result.photo:saveMetadata() end)
+                    if ok then
+                        xmpWritten = xmpWritten + 1
+                    elseif not xmpErr then
+                        xmpErr = err   -- capture first failure; keep going
+                    end
+                    if xmpIdx % 20 == 0 then LrTasks.yield() end
+                end
+            end
+            xmpProgress:done()
+        end
+
         -- ── Summary ────────────────────────────────────────────────────────────
         local msg = {}
         msg[#msg+1] = string.format('%d photo%s re-keyworded (all previous keywords erased and replaced).',
@@ -895,6 +936,18 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
         end
         if #workerErrors > 0 then
             msg[#msg+1] = 'Warning: '..workerErrors[1]
+        end
+        if writeXmp then
+            if xmpErr then
+                msg[#msg+1] = string.format(
+                    'XMP warning: keywords written to catalogue but some XMP saves failed:\n%s',
+                    tostring(xmpErr))
+            else
+                msg[#msg+1] = string.format(
+                    '%d XMP sidecar%s / file%s updated on disk.',
+                    xmpWritten, xmpWritten == 1 and '' or 's',
+                    xmpWritten == 1 and '' or 's')
+            end
         end
         msg[#msg+1] = string.format('\nEstimated API cost: $%.4f', estimatedSpend)
 
