@@ -535,11 +535,12 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                 or  string.format('~%d minutes', estMins)
 
         local f           = LrView.osFactory()
-        local dialogOk, pickedStyle, writeXmp = LrFunctionContext.callWithContext('supreme_dlg',
+        local dialogOk, pickedStyle, writeXmp, createSmartColls = LrFunctionContext.callWithContext('supreme_dlg',
             function(dlgCtx)
                 local props  = LrBinding.makePropertyTable(dlgCtx)
-                props.style    = prefs.lastStyle or 'auto'
-                props.writeXmp = prefs.writeXmp ~= false   -- default true
+                props.style            = prefs.lastStyle or 'auto'
+                props.writeXmp         = prefs.writeXmp ~= false        -- default true
+                props.smartCollections = prefs.smartCollections ~= false -- default true
 
                 local dr = LrDialogs.presentModalDialog {
                     title    = 'Keyworder Supreme',
@@ -580,6 +581,18 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                                  .. 'previous tool already wrote keywords to XMP.',
                             font  = '<system/small>',
                         },
+                        f:row {
+                            f:checkbox {
+                                value = LrView.bind('smartCollections'),
+                                title = 'Create smart collections for each keyword',
+                                font  = '<system>',
+                            },
+                        },
+                        f:static_text {
+                            title = 'Organised into a "Keyworder Supreme" set in your Collections panel.\n'
+                                 .. 'New keywords get new collections; existing ones are updated automatically.',
+                            font  = '<system/small>',
+                        },
                         f:separator { fill_horizontal = 1 },
                         f:static_text {
                             title = string.format(
@@ -595,12 +608,13 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                     },
                     actionVerb = 'Erase & Re-Keyword',
                 }
-                return dr == 'ok', props.style, props.writeXmp
+                return dr == 'ok', props.style, props.writeXmp, props.smartCollections
             end)
 
         if not dialogOk then return end
-        prefs.lastStyle = pickedStyle
-        prefs.writeXmp  = writeXmp
+        prefs.lastStyle        = pickedStyle
+        prefs.writeXmp         = writeXmp
+        prefs.smartCollections = createSmartColls
 
         local activePrompt = PROMPTS[pickedStyle] or PROMPTS['auto']
 
@@ -939,6 +953,75 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
             xmpProgress:done()
         end
 
+        -- ── Smart collections phase ───────────────────────────────────────────
+        local smartCollCount = 0
+        if createSmartColls and written > 0 then
+
+            -- Collect every unique keyword name that was actually applied
+            local allKwNames = {}
+            local kwSeen     = {}
+            for _, result in ipairs(scanResults) do
+                if not result.err then
+                    for _, kw in ipairs(result.keywords or {}) do
+                        if not kwSeen[kw.name] then
+                            kwSeen[kw.name] = true
+                            allKwNames[#allKwNames+1] = kw.name
+                        end
+                    end
+                end
+            end
+
+            -- Build keyword → group lookup from KeywordGroups
+            local kwToGroup = {}
+            for _, group in ipairs(KeywordGroups) do
+                for _, kw in ipairs(group.keywords) do
+                    kwToGroup[kw:lower()] = group.name
+                end
+            end
+
+            local scProgress = LrProgressScope {
+                title = 'Creating smart collections…',
+            }
+
+            -- Pre-create root set and all group sub-sets
+            local rootSet   = nil
+            local groupSets = {}
+            catalog:withWriteAccessDo('Keyworder Supreme: create collection sets', function()
+                rootSet = catalog:createCollectionSet('Keyworder Supreme', nil, true)
+                for _, group in ipairs(KeywordGroups) do
+                    groupSets[group.name] = catalog:createCollectionSet(group.name, rootSet, true)
+                end
+                if not groupSets['Other'] then
+                    groupSets['Other'] = catalog:createCollectionSet('Other', rootSet, true)
+                end
+            end)
+
+            -- One smart collection per keyword
+            for idx, kwName in ipairs(allKwNames) do
+                scProgress:setPortionComplete(idx - 1, #allKwNames)
+                scProgress:setCaption(kwName)
+
+                local groupName = kwToGroup[kwName:lower()] or 'Other'
+                local groupSet  = groupSets[groupName] or groupSets['Other']
+
+                catalog:withWriteAccessDo('Keyworder Supreme: smart collection ' .. kwName, function()
+                    catalog:createSmartCollection(kwName, {
+                        combine = 'intersect',
+                        {
+                            criteria  = 'keywords',
+                            operation = 'words',
+                            value     = kwName,
+                            value2    = '',
+                        },
+                    }, groupSet, true)
+                end)
+                smartCollCount = smartCollCount + 1
+                LrTasks.yield()
+            end
+
+            scProgress:done()
+        end
+
         -- ── Summary ────────────────────────────────────────────────────────────
         local msg = {}
         msg[#msg+1] = string.format('%d photo%s re-keyworded (all previous keywords erased and replaced).',
@@ -971,6 +1054,11 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                     xmpWritten, xmpWritten == 1 and '' or 's',
                     xmpWritten == 1 and '' or 's')
             end
+        end
+        if smartCollCount > 0 then
+            msg[#msg+1] = string.format(
+                '%d smart collection%s created / updated in the "Keyworder Supreme" set.',
+                smartCollCount, smartCollCount == 1 and '' or 's')
         end
         msg[#msg+1] = string.format('\nEstimated API cost: $%.4f', estimatedSpend)
 
