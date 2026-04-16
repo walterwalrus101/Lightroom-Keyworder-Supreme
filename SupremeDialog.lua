@@ -21,6 +21,7 @@
 local LrApplication     = import 'LrApplication'
 local LrBinding         = import 'LrBinding'
 local LrDialogs         = import 'LrDialogs'
+local LrFileUtils       = import 'LrFileUtils'
 local LrFunctionContext = import 'LrFunctionContext'
 local LrHttp            = import 'LrHttp'
 local LrPathUtils       = import 'LrPathUtils'
@@ -449,6 +450,44 @@ local function cleanMeta(s)
     return (s ~= '') and s:lower() or nil
 end
 
+-- ── Resume state ─────────────────────────────────────────────────────────────
+-- Saved to disk after the scan phase so a crash during apply can be recovered.
+-- Deleted automatically on successful completion.
+local RESUME_FILE = LrPathUtils.child(_PLUGIN.path, 'supreme_resume.lua')
+
+local function saveResumeState(results, style)
+    local f, ioErr = io.open(RESUME_FILE, 'w')
+    if not f then
+        LrDialogs.message('Keyworder Supreme — Resume Warning',
+            'Could not save resume file:\n' .. (ioErr or 'unknown error') .. '\n\n'
+         .. 'If the run is interrupted during the apply phase you will need to re-scan.',
+            'warning')
+        return
+    end
+    f:write('-- Keyworder Supreme resume state — do not edit manually\n')
+    f:write(string.format('local style = %q\n', style or 'auto'))
+    f:write('return style, {\n')
+    for _, r in ipairs(results) do
+        f:write(string.format('  { uuid=%q, name=%q, err=%s, caption=%s, keywords={',
+            r.uuid    or '',
+            r.name    or '',
+            r.err     and string.format('%q', r.err)     or 'nil',
+            r.caption and string.format('%q', r.caption) or 'nil'
+        ))
+        for j, kw in ipairs(r.keywords or {}) do
+            f:write(string.format('%q', kw.name))
+            if j < #r.keywords then f:write(',') end
+        end
+        f:write(' } },\n')
+    end
+    f:write('}\n')
+    f:close()
+end
+
+local function deleteResumeState()
+    LrFileUtils.delete(RESUME_FILE)
+end
+
 -- ── Main entry point ──────────────────────────────────────────────────────────
 local catalog = LrApplication.activeCatalog()
 
@@ -550,6 +589,57 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
 
         local activePrompt = PROMPTS[pickedStyle] or PROMPTS['auto']
 
+        -- ── Resume check ───────────────────────────────────────────────────────
+        local scanResults = {}
+        local skipScan    = false
+
+        local resumeHandle = io.open(RESUME_FILE, 'r')
+        if resumeHandle then
+            resumeHandle:close()
+            local choice = LrDialogs.confirm(
+                'Keyworder Supreme — Resume Previous Run?',
+                'A previous run was interrupted before it finished writing keywords.\n\n'
+             .. 'Resume to skip the API scan and go straight to applying keywords\n'
+             .. 'using the saved results (free — no extra API calls).\n\n'
+             .. 'Start Fresh to discard the saved results and re-scan all photos.',
+                'Resume', 'Start Fresh')
+            if choice == 'ok' then
+                -- Load saved results and match photos back by UUID
+                local savedStyle, savedResults = dofile(RESUME_FILE)
+                local photoByUuid = {}
+                for _, photo in ipairs(photos) do
+                    local u = photo:getRawMetadata('uuid') or ''
+                    if u ~= '' then photoByUuid[u] = photo end
+                end
+                for _, r in ipairs(savedResults or {}) do
+                    local photo = photoByUuid[r.uuid]
+                    if photo then
+                        local keywords = {}
+                        for _, kwName in ipairs(r.keywords or {}) do
+                            keywords[#keywords+1] = { name=kwName, score=1.0 }
+                        end
+                        scanResults[#scanResults+1] = {
+                            photo=photo, uuid=r.uuid, name=r.name,
+                            keywords=keywords, caption=r.caption, err=r.err,
+                        }
+                    end
+                end
+                -- Use the style from the saved run
+                if savedStyle and PROMPTS[savedStyle] then
+                    activePrompt = PROMPTS[savedStyle]
+                end
+                skipScan = true
+            else
+                deleteResumeState()
+            end
+        end
+
+        -- Declared outside scan block so summary can always reference them
+        local workerErrors   = {}
+        local estimatedSpend = 0.0
+
+        if not skipScan then
+
         -- ── Scan: dedicated loader + 4 API workers ────────────────────────────
         local progress = LrProgressScope {
             title = string.format('Re-keywording %d photo%s…',
@@ -561,9 +651,6 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
         local thumbLoaded = 0
         local loaderDone  = false
 
-        local scanResults    = {}
-        local workerErrors   = {}
-        local estimatedSpend = 0.0
         local queuePos       = 0
         local queueMu        = false
         local workersDone    = 0
@@ -620,9 +707,11 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                 local name    = item.name
                 local imgData = item.imgData
 
+                local uuid = photo:getRawMetadata('uuid') or ''
+
                 if not imgData then
                     table.insert(scanResults, {
-                        photo=photo, name=name, keywords={}, caption=nil,
+                        photo=photo, uuid=uuid, name=name, keywords={}, caption=nil,
                         err='Could not load image thumbnail',
                     })
                 else
@@ -681,7 +770,7 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                         if cam  then table.insert(keywords,1,{name=cam,  score=1.0}) end
 
                         table.insert(scanResults, {
-                            photo=photo, name=name,
+                            photo=photo, uuid=uuid, name=name,
                             keywords=keywords, caption=caption, err=parseErr,
                         })
                     end
@@ -736,6 +825,11 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
         end
 
         progress:done()
+
+        -- Save scan results so a crash during apply can be resumed next run
+        saveResumeState(scanResults, pickedStyle)
+
+        end -- if not skipScan
 
         -- ── Apply: erase all keywords, write fresh ones ────────────────────────
         local applyProgress = LrProgressScope {
@@ -803,6 +897,9 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
             msg[#msg+1] = 'Warning: '..workerErrors[1]
         end
         msg[#msg+1] = string.format('\nEstimated API cost: $%.4f', estimatedSpend)
+
+        -- Run completed — discard the resume file
+        deleteResumeState()
 
         LrDialogs.message('Keyworder Supreme — Done',
             table.concat(msg, '\n'),
