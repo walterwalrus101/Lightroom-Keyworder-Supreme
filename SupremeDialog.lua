@@ -504,6 +504,25 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
             return
         end
 
+        -- ── Ensure batch-tracking smart collections exist ─────────────────────
+        -- Created once here so they are available before the first run and
+        -- stay up to date as ks-done is stamped on each processed photo.
+        catalog:withWriteAccessDo('Keyworder Supreme: create batch collections', function()
+            local batchSet = catalog:createCollectionSet('Keyworder Supreme — Batches', nil, true)
+            if batchSet then
+                -- Photos Supreme has already processed this session or previously
+                catalog:createSmartCollection('Already Processed', {
+                    combine = 'intersect',
+                    { criteria='keywords', operation='words', value='ks-done', value2='' },
+                }, batchSet, true)
+                -- Photos not yet touched by Supreme — select these for the next batch
+                catalog:createSmartCollection('Not Yet Processed', {
+                    combine = 'intersect',
+                    { criteria='keywords', operation='nwords', value='ks-done', value2='' },
+                }, batchSet, true)
+            end
+        end)
+
         -- ── Selected photos ────────────────────────────────────────────────────
         local allPhotos = catalog:getTargetPhotos()
         if not allPhotos or #allPhotos == 0 then
@@ -913,9 +932,13 @@ LrFunctionContext.callWithContext('KeyworederSupreme', function(_ctx)
                         local kwObj = catalog:createKeyword(kw.name, {}, true, nil, true)
                         if kwObj then result.photo:addKeyword(kwObj) end
                     end
-                    -- 3. Workflow marker
+                    -- 3. Workflow markers
                     local marker = catalog:createKeyword('AI keyworded', {}, false, nil, true)
                     if marker then result.photo:addKeyword(marker) end
+                    -- 'ks-done' is unique to Keyworder Supreme — lets you filter
+                    -- photos NOT yet processed for batch/resume workflows
+                    local ksDone = catalog:createKeyword('ks-done', {}, false, nil, true)
+                    if ksDone then result.photo:addKeyword(ksDone) end
                     -- 4. IPTC caption
                     if result.caption and result.caption ~= '' then
                         result.photo:setRawMetadata('caption', result.caption)
