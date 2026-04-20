@@ -39,7 +39,7 @@ local prefs = LrPrefs.prefsForPlugin()
 -- ── Constants ────────────────────────────────────────────────────────────────
 local GEMINI_MODEL_DEFAULT = 'gemini-2.5-flash'
 local THUMB_SIZE           = 512
-local COST_PER_IMAGE       = 0.00011
+local COST_PER_IMAGE       = 0.00026   -- gemini-2.5-flash, thinking disabled, 512px thumbnail
 local RATE_LIMIT_RPM       = 2000
 local NUM_WORKERS          = 4
 local PHOTOS_PER_MIN_EST   = 150   -- conservative ETA estimate
@@ -262,7 +262,7 @@ local function callGeminiAPI(apiKey, imageBytes, prompt)
         '{"contents":[{"parts":[',
         '{"text":"', escapedPrompt, '"},',
         '{"inline_data":{"mime_type":"image/jpeg","data":"', b64, '"}}',
-        ']}],"generationConfig":{"temperature":0.1,"maxOutputTokens":2048}}',
+        ']}],"generationConfig":{"temperature":0.1,"maxOutputTokens":2048,"thinkingConfig":{"thinkingBudget":0}}}',
     })
     local url = 'https://generativelanguage.googleapis.com/v1beta/models/'
              .. (prefs.geminiModel or GEMINI_MODEL_DEFAULT)
